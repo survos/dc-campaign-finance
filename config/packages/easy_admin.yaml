@@ -1,0 +1,5 @@
+easy_admin:
+    entities:
+        - App\Entity\Committee
+        - App\Entity\Contribution
+        - App\Entity\Expenditure
