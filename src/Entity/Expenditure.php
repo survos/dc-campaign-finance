@@ -24,7 +24,7 @@ class Expenditure
     /**
      * @var string|null
      *
-     * @ORM\Column(name="committee_name", type="string", length=255, nullable=true)
+     * @ ORM\Column(name="committee_name", type="string", length=255, nullable=true)
      */
     private $committeeName;
 
@@ -41,6 +41,13 @@ class Expenditure
      * @ORM\Column(name="payee_address", type="string", length=255, nullable=true)
      */
     private $payeeAddress;
+
+    /**
+     * @var int|null
+     *
+     * @ORM\Column(name="amount", type="integer", nullable=false)
+     */
+    private $amount;
 
     /**
      * @var string|null
@@ -90,13 +97,6 @@ class Expenditure
      * @ORM\Column(name="zip", type="string", length=255, nullable=true)
      */
     private $zip;
-
-    /**
-     * @var float|null
-     *
-     * @ORM\Column(name="amount", type="float", precision=10, scale=0, nullable=true)
-     */
-    private $amount;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Committee", inversedBy="expenditures")
@@ -229,12 +229,12 @@ class Expenditure
         return $this;
     }
 
-    public function getAmount(): ?float
+    public function getAmount(): int
     {
         return $this->amount;
     }
 
-    public function setAmount(?float $amount): self
+    public function setAmount(int $amount): self
     {
         $this->amount = $amount;
 

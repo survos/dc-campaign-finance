@@ -32,7 +32,7 @@ class ImportCommand extends Command
     {
         $this
             ->setDescription('Add a short description for your command')
-            ->addArgument('arg1', InputArgument::OPTIONAL, 'Argument description')
+            ->addArgument('data-dir', InputArgument::OPTIONAL, 'Data Directory', "")
             ->addOption('option1', null, InputOption::VALUE_NONE, 'Option description')
         ;
     }
@@ -46,10 +46,13 @@ class ImportCommand extends Command
                 'expenditure.csv' => Expenditure::class,
                      'contribution.csv' => Contribution::class
                  ] as $csv => $class) {
+            $csv = $input->getArgument('data-dir') . $csv;
+
             if (!file_exists($csv)) {
                 throw new \Exception("Cannot open $csv");
             }
             $reader = new Reader($csv);
+            $io->note(sprintf('Importing: %s (%d lines)', $csv, $reader->getLastLineNumber()));
 
             try {
                 while ($row = $reader->getRow()) {
@@ -63,17 +66,8 @@ class ImportCommand extends Command
         }
 
 
-        $arg1 = $input->getArgument('arg1');
 
-        if ($arg1) {
-            $io->note(sprintf('You passed an argument: %s', $arg1));
-        }
-
-        if ($input->getOption('option1')) {
-            // ...
-        }
-
-        $io->success('You have a new command! Now make it your own! Pass --help to see your options.');
+        $io->success('Data import complete.');
     }
 
     private function importRow($data, $class, $lineNumber)
@@ -90,10 +84,12 @@ class ImportCommand extends Command
                 break;
             case Expenditure::class:
                 $data['Committee'] = $this->committees[$keyValue];
+                unset($data['Committee Name']);
                 $entity = $this->importFields($key, $data, $class);
                 break;
             case Contribution::class:
                 $data['Committee'] = $this->committees[$keyValue];
+                unset($data['Committee Name']);
                 $entity = $this->importFields($key, $data, $class);
                 break;
         }
