@@ -50,42 +50,42 @@ class Contribution
     /**
      * @var string|null
      *
-     * @ORM\Column(name="contributor_name", type="string", length=255, nullable=true)
+     * @ ORM\Column(name="contributor_name", type="string", length=255, nullable=true)
      */
     private $contributorName;
 
     /**
      * @var string|null
      *
-     * @ORM\Column(name="contributor_address", type="string", length=255, nullable=true)
+     * @ ORM\Column(name="contributor_address", type="string", length=255, nullable=true)
      */
     private $contributorAddress;
 
     /**
      * @var string|null
      *
-     * @ORM\Column(name="number_and_street", type="string", length=255, nullable=true)
+     * @ ORM\Column(name="number_and_street", type="string", length=255, nullable=true)
      */
     private $numberAndStreet;
 
     /**
      * @var string|null
      *
-     * @ORM\Column(name="city", type="string", length=255, nullable=true)
+     * @ ORM\Column(name="city", type="string", length=255, nullable=true)
      */
     private $city;
 
     /**
      * @var string|null
      *
-     * @ORM\Column(name="state", type="string", length=255, nullable=true)
+     * @ ORM\Column(name="state", type="string", length=255, nullable=true)
      */
     private $state;
 
     /**
      * @var string|null
      *
-     * @ORM\Column(name="zip", type="string", length=255, nullable=true)
+     * @ ORM\Column(name="zip", type="string", length=255, nullable=true)
      */
     private $zip;
 
@@ -137,6 +137,12 @@ class Contribution
      * @ORM\Column(name="occupation", type="string", length=255, nullable=true)
      */
     private $occupation;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Contributor", inversedBy="contributions")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $contributor;
 
 
     public function getId(): ?int
@@ -344,6 +350,18 @@ class Contribution
     public function setCommittee(Committee $committee): self
     {
         $this->committee = $committee;
+
+        return $this;
+    }
+
+    public function getContributor(): ?Contributor
+    {
+        return $this->contributor;
+    }
+
+    public function setContributor(?Contributor $contributor): self
+    {
+        $this->contributor = $contributor;
 
         return $this;
     }

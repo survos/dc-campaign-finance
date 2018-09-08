@@ -4,6 +4,7 @@ namespace App\Command;
 
 use App\Entity\Committee;
 use App\Entity\Contribution;
+use App\Entity\Contributor;
 use App\Entity\Expenditure;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCSV\Reader;
@@ -21,11 +22,14 @@ class ImportCommand extends Command
     private $em;
 
     private $committees; // cache, keyed by name
+    private $contributors;
 
     public function __construct($name = null, EntityManagerInterface $entityManager)
     {
         parent::__construct($name);
         $this->em = $entityManager;
+        $this->committees = [];
+        $this->contributors = [];
     }
 
     protected function configure()
@@ -43,8 +47,8 @@ class ImportCommand extends Command
 
         foreach ([
                      'committee.csv' => Committee::class,
+                     'contribution.csv' => Contribution::class,
                 'expenditure.csv' => Expenditure::class,
-                     'contribution.csv' => Contribution::class
                  ] as $csv => $class) {
             $csv = $input->getArgument('data-dir') . $csv;
 
@@ -53,12 +57,13 @@ class ImportCommand extends Command
             }
             $reader = new Reader($csv);
             $io->note(sprintf('Importing: %s (%d lines)', $csv, $reader->getLastLineNumber()));
-
             try {
+
                 while ($row = $reader->getRow()) {
                     $entity = $this->importRow($row, $class, $reader->getLineNumber());
                 }
             } catch (\Exception $e) {
+                print $e->getMessage();
                 $io->error(sprintf("Error on line %d\n", $reader->getLineNumber()) );
             }
 
@@ -78,6 +83,9 @@ class ImportCommand extends Command
 
         switch ($class) {
             case Committee::class:
+                if ($data['Election Year'] < 2016) {
+                    // return null;
+                }
                 $key = ['committeeName' => $keyValue];
                 $entity = $this->importFields($key, $data, $class);
                 $this->committees[$keyValue] = $entity;
@@ -88,8 +96,38 @@ class ImportCommand extends Command
                 $entity = $this->importFields($key, $data, $class);
                 break;
             case Contribution::class:
+                // find/create a contributor
+
+                $uniqueKey = [
+                    'name' => $data['Contributor Name'],
+                    'numberAndStreet' => $data['Number and Street'],
+                    'city' => $data['City']
+                ];
+                $keyString = join('-', array_values($uniqueKey));
+
+
+                if (isset($this->contributors[$keyString])) {
+                    $contributor = $this->contributors[$keyString];
+                } else {
+                    if (!$contributor = $this->em->getRepository(Contributor::class)->findOneBy($uniqueKey)) {
+                        $contributor = (new Contributor())
+                            ->setName($data['Contributor Name'])
+                            ->setNumberAndStreet($data['Number and Street'])
+                            ->setCity($data['City'])
+                            ->setState($data['State'])
+                            ->setZip($data['Zip'])
+                        ;
+                        $this->em->persist($contributor);
+                    }
+                    $this->contributors[$keyString] = $contributor;
+                }
+                // dump($contributor); die();
+
+
                 $data['Committee'] = $this->committees[$keyValue];
+                $data['Contributor'] =  $contributor;
                 unset($data['Committee Name']);
+                unset($data['Contributor Name']);
                 $entity = $this->importFields($key, $data, $class);
                 break;
         }

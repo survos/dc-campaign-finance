@@ -3,3 +3,4 @@ easy_admin:
         - App\Entity\Committee
         - App\Entity\Contribution
         - App\Entity\Expenditure
+        - App\Entity\Contributor
