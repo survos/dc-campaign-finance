@@ -32,6 +32,8 @@ class ImportCommand extends Command
         $this->contributors = [];
     }
 
+    
+
     protected function configure()
     {
         $this
